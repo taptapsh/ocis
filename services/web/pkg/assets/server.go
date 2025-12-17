@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"golang.org/x/net/html"
 )
@@ -58,7 +59,8 @@ func (f *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if !isValid(f, path) {
+	// Reject paths containing any attempt at parent directory traversal or separators
+	if strings.Contains(path, "..") || strings.Contains(path, "\\") {
 		serveIndex()
 		return
 	}
