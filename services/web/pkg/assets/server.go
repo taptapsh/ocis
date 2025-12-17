@@ -122,7 +122,19 @@ func isValid(f *fileServer, path string) bool {
 			rel = rel[1:]
 		}
 		candidate := filepath.Join(rootAbs, filepath.FromSlash(rel))
-		fi, err := os.Lstat(candidate)
+		candidateAbs, err := filepath.Abs(candidate)
+		if err != nil {
+			return false
+		}
+		// Ensure the candidate is under rootAbs (with path separator to ensure rootAbs itself is not matched for e.g. /var/www and /var/www-evil)
+		rootWithSep := rootAbs
+		if !strings.HasSuffix(rootWithSep, string(os.PathSeparator)) {
+			rootWithSep += string(os.PathSeparator)
+		}
+		if !strings.HasPrefix(candidateAbs, rootWithSep) {
+			return false
+		}
+		fi, err := os.Lstat(candidateAbs)
 		if err != nil {
 			return false
 		}
